@@ -83,7 +83,8 @@ def test_user_creation():
     assert user.is_admin is False  # Default value
     print("User creation test passed!")
 
-test_user_creation()```
+test_user_creation()
+```
 
 ### Place
 
@@ -110,7 +111,8 @@ def test_place_creation():
     assert place.reviews[0].text == "Great stay!"
     print("Place creation and relationship test passed!")
 
-test_place_creation()```
+test_place_creation()
+```
 
 ### Review
 
@@ -135,7 +137,8 @@ def test_amenity_creation():
     assert amenity.name == "Wi-Fi"
     print("Amenity creation test passed!")
 
-test_amenity_creation()```
+test_amenity_creation()
+```
 
 ## Installation Instructions
 1. Clone the Repository
