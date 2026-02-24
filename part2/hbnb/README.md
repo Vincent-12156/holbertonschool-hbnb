@@ -72,7 +72,7 @@ The business logic layer defines the core entities and their relationships:
   - One-to-many with Place
   - One-to-many with Review
 
-#### Test
+#### Test:
 ```from app.models.user import User
 
 def test_user_creation():
@@ -94,7 +94,7 @@ test_user_creation()
   - One-to-many with Review
   - Many-to-many with Amenity
 
-#### Test
+#### Test:
 ```from app.models.place import Place
 from app.models.user import User
 from app.models.review import Review
@@ -129,7 +129,7 @@ test_place_creation()
  - Relationships:
   - Many-to-many with Place
 
-#### Test
+#### Test:
 ```from app.models.amenity import Amenity
 
 def test_amenity_creation():
