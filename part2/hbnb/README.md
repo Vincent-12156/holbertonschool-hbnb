@@ -64,30 +64,34 @@ Lists all required Python dependencies.
 
 ## Installation Instructions
 1. Clone the Repository
-    git clone <repository_url>
-    cd hbnb
+    - git clone [<repository_url>](https://github.com/Name/holbertonschool-hbnb.git)
+    - cd hbnb
 2. Create a Virtual Environment
-    python3 -m venv venv
+    - python3 -m venv venv
 
 ### Activate the virtual environment:
 
 Linux / macOS
-    source venv/bin/activate
+    - source venv/bin/activate
 
 Windows
-    venv\Scripts\activate
+    - venv\Scripts\activate
 
 3. Install Dependencies
-    pip install -r requirements.txt
+    - pip install -r requirements.txt
 
 4. Run the Application
-    python run.py
+    - python run.py
 
 The application will start in development mode.
 
 Swagger API documentation will be available at:
 
 http://127.0.0.1:5000/api/v1/
+
+### Desactivate the vistual environment:
+
+    - deactivate
 
 ## Author
 
