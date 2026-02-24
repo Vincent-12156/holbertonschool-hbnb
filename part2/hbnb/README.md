@@ -34,9 +34,9 @@ Contains business logic and domain models:
 ### app/services/
 
 Implements the Facade Pattern.
- - facade.py – Contains the HBnBFacade class
- - Coordinates communication between API, models, and persistence layers
- - A singleton facade instance is created for global use
+facade.py – Contains the HBnBFacade class
+  - Coordinates communication between API, models, and persistence layers
+  - A singleton facade instance is created for global use
 
 ### app/persistence/
 
@@ -61,10 +61,87 @@ Contains configuration classes for managing environment-specific settings.
 
 Lists all required Python dependencies.
 
+## Business Logic Layer
+
+The business logic layer defines the core entities and their relationships:
+
+### User
+
+ - Attributes: id, first_name, last_name, email, is_admin, created_at, updated_at
+ - Relationships:
+  - One-to-many with Place
+  - One-to-many with Review
+
+#### Test
+  from app.models.user import User
+
+def test_user_creation():
+    user = User(first_name="John", last_name="Doe", email="john.doe@example.com")
+    assert user.first_name == "John"
+    assert user.last_name == "Doe"
+    assert user.email == "john.doe@example.com"
+    assert user.is_admin is False  # Default value
+    print("User creation test passed!")
+
+test_user_creation()
+
+### Place
+
+ - Attributes: id, title, description, price, latitude, longitude, owner, created_at, updated_at
+
+ - Relationships:
+  - One-to-many with Review
+  - Many-to-many with Amenity
+
+#### Test
+from app.models.place import Place
+from app.models.user import User
+from app.models.review import Review
+
+def test_place_creation():
+    owner = User(first_name="Alice", last_name="Smith", email="alice.smith@example.com")
+    place = Place(title="Cozy Apartment", description="A nice place to stay", price=100, latitude=37.7749, longitude=-122.4194, owner=owner)
+
+    # Adding a review
+    review = Review(text="Great stay!", rating=5, place=place, user=owner)
+    place.add_review(review)
+
+    assert place.title == "Cozy Apartment"
+    assert place.price == 100
+    assert len(place.reviews) == 1
+    assert place.reviews[0].text == "Great stay!"
+    print("Place creation and relationship test passed!")
+
+test_place_creation()
+
+### Review
+
+ - Attributes: id, text, rating, place, user, created_at, updated_at
+
+ - Relationships:
+  - Belongs to a Place
+  - Written by a User
+
+### Amenity
+
+ - Attributes: id, name, created_at, updated_at
+
+ - Relationships:
+  - Many-to-many with Place
+
+#### Test
+from app.models.amenity import Amenity
+
+def test_amenity_creation():
+    amenity = Amenity(name="Wi-Fi")
+    assert amenity.name == "Wi-Fi"
+    print("Amenity creation test passed!")
+
+test_amenity_creation()
 
 ## Installation Instructions
 1. Clone the Repository
-    - git clone https://github.com/Yout_Name/holbertonschool-hbnb.git
+    - git clone https://github.com/Your_Name/holbertonschool-hbnb.git
     - cd hbnb
 2. Create a Virtual Environment
     - python3 -m venv venv
@@ -72,10 +149,10 @@ Lists all required Python dependencies.
 ### Activate the virtual environment:
 
 Linux / macOS
-    - source venv/bin/activate
+- source venv/bin/activate
 
 Windows
-    - venv\Scripts\activate
+- venv\Scripts\activate
 
 3. Install Dependencies
     - pip install -r requirements.txt
