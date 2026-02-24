@@ -64,7 +64,7 @@ Lists all required Python dependencies.
 
 ## Installation Instructions
 1. Clone the Repository
-    - git clone [<repository_url>](https://github.com/Name/holbertonschool-hbnb.git)
+    - git clone https://github.com/Yout_Name/holbertonschool-hbnb.git
     - cd hbnb
 2. Create a Virtual Environment
     - python3 -m venv venv
@@ -89,9 +89,8 @@ Swagger API documentation will be available at:
 
 http://127.0.0.1:5000/api/v1/
 
-### Desactivate the vistual environment:
-
-    - deactivate
+### Desactivate the virtual environment:
+- deactivate
 
 ## Author
 
