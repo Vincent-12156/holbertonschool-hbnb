@@ -1,8 +1,11 @@
 from app.models.base import BaseModel
 
+
 class Amenity(BaseModel):
     def __init__(self, name):
         super().__init__()
+        if not name.strip():
+            raise ValueError("Amenity name cannot be empty")
         self.name = name[:50]
         self.places = []
 

@@ -86,6 +86,19 @@ def test_user_creation():
 test_user_creation()
 ```
 
+```
+# Create a new user
+curl -X POST http://127.0.0.1:5000/api/v1/users/ \
+     -H "Content-Type: application/json" \
+     -d '{"first_name": "John", "last_name": "Doe", "email": "john.doe@example.com"}'
+
+# Get a single user by ID
+curl -X GET http://127.0.0.1:5000/api/v1/users/<user_id>
+
+# List all users
+curl -X GET http://127.0.0.1:5000/api/v1/users/
+```
+
 ### Place
 
  - Attributes: id, title, description, price, latitude, longitude, owner, created_at, updated_at
@@ -152,8 +165,6 @@ test_amenity_creation()
 Linux / macOS
 - source venv/bin/activate
 
-Windows
-- venv\Scripts\activate
 
 3. Install Dependencies
     - pip install -r requirements.txt
@@ -172,4 +183,4 @@ http://127.0.0.1:5000/api/v1/
 
 ## Author
 
-Aythan and Vincent C#28-Sens
+Aythan CRISTOVAO and Vincent RENAUD C#28-Sens

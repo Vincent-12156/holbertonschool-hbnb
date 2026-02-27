@@ -3,11 +3,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# Virtual environment
+# Environment variables
+.env
 venv/
-
-# Test files (optional)
-app/models/test_*.py
 tests/
 
 # IDE/editor files
@@ -22,6 +20,3 @@ Thumbs.db
 
 # Logs
 *.log
-
-# Environment variables
-.env
