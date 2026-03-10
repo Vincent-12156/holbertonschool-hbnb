@@ -1,35 +1,89 @@
-from app.models.base import BaseModel
-from app.models.users import User
+from app.models.base_model import BaseModel
 
 
 class Place(BaseModel):
-    def __init__(self, title, description, price, latitude, longitude, owner):
+    def __init__(
+        self,
+        title: str,
+        description: str,
+        price: float,
+        latitude: float,
+        longitude: float,
+        owner_id: str,
+        amenities=None,
+    ):
         super().__init__()
 
-        self.title = title[:100]
-        self.description = description
+        if title is None or not str(title).strip():
+            raise ValueError("title cannot be empty")
+
+        if price is None or float(price) < 0:
+            raise ValueError("price must be positive")
+
+        lat = float(latitude)
+        lon = float(longitude)
+
+        if not -90.0 <= lat <= 90.0:
+            raise ValueError("latitude must be between -90 and 90")
+
+        if not -180.0 <= lon <= 180.0:
+            raise ValueError("longitude must be between -180 and 180")
+
+        self.title = str(title).strip()[:100]
+        self.description = (str(description).strip() if description is not None else "")[:1000]
         self.price = float(price)
-        self.latitude = float(latitude)
-        self.longitude = float(longitude)
-        self.owner = owner
+        self.latitude = lat
+        self.longitude = lon
+
+        self.owner_id = owner_id
+        self.amenities = list(amenities or [])
         self.reviews = []
-        self.amenities = []
 
-        if not title or not title.strip():
-            raise ValueError("Title cannot be empty")
-        if not description or not description.strip():
-            raise ValueError("Description cannot be empty")
-        if self.price < 0:
-            raise ValueError("Price must be positive")
-        if not (-90.0 <= self.latitude <= 90.0):
-            raise ValueError("Latitude must be between -90 and 90")
-        if not (-180.0 <= self.longitude <= 180.0):
-            raise ValueError("Longitude must be between -180 and 180")
-        if not isinstance(owner, User):
-            raise ValueError("Owner must be a User instance")
+    def update(self, data: dict):
+        data = data or {}
 
-    def add_review(self, review):
-        self.reviews.append(review)
+        if "title" in data:
+            v = data["title"]
+            if v is None or not str(v).strip():
+                raise ValueError("title cannot be empty")
+            self.title = str(v).strip()[:100]
 
-    def add_amenity(self, amenity):
-        self.amenities.append(amenity)
+        if "description" in data:
+            v = data["description"]
+            self.description = (str(v).strip() if v is not None else "")[:1000]
+
+        if "price" in data:
+            v = data["price"]
+            if v is None or float(v) < 0:
+                raise ValueError("price must be positive")
+            self.price = float(v)
+
+        if "latitude" in data:
+            v = float(data["latitude"])
+            if not -90.0 <= v <= 90.0:
+                raise ValueError("latitude must be between -90 and 90")
+            self.latitude = v
+
+        if "longitude" in data:
+            v = float(data["longitude"])
+            if not -180.0 <= v <= 180.0:
+                raise ValueError("longitude must be between -180 and 180")
+            self.longitude = v
+
+        if "amenities" in data:
+            self.amenities = list(data.get("amenities") or [])
+
+
+        self.save()
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "title": self.title,
+            "description": self.description,
+            "price": self.price,
+            "latitude": self.latitude,
+            "longitude": self.longitude,
+            "owner_id": self.owner_id,
+            "amenities": self.amenities,
+        }

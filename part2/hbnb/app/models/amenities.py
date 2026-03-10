@@ -1,15 +1,26 @@
-from app.models.base import BaseModel
+from app.models.base_model import BaseModel
 
 
 class Amenity(BaseModel):
-    def __init__(self, name):
+    def __init__(self, name: str):
         super().__init__()
-        if not name.strip():
-            raise ValueError("Amenity name cannot be empty")
-        self.name = name[:50]
-        self.places = []
 
-    def add_to_place(self, place):
-        if place not in self.places:
-            self.places.append(place)
-            place.add_amenity(self)
+        if name is None or not str(name).strip():
+            raise ValueError("name cannot be empty")
+
+        self.name = str(name).strip()[:50]
+
+    def update(self, data: dict):
+        data = data or {}
+        if "name" in data:
+            v = data["name"]
+            if v is None or not str(v).strip():
+                raise ValueError("name cannot be empty")
+            self.name = str(v).strip()[:50]
+        self.save()
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+        }

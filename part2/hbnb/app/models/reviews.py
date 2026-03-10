@@ -1,24 +1,50 @@
-from app.models.base import BaseModel
-from app.models.users import User
-from app.models.places import Place
+from app.models.base_model import BaseModel
 
 
 class Review(BaseModel):
-    def __init__(self, text, rating, place, user):
+    def __init__(
+        self,
+        text: str,
+        rating: int,
+        user_id: str,
+        place_id: str,
+    ):
         super().__init__()
-        self.text = text
-        self.rating = int(rating)
-        self.place = place
-        self.user = user
 
-        if not text.strip():
-            raise ValueError("Review text cannot be empty")
-        if not (1 <= rating <= 5):
-            raise ValueError("Rating must be between 1 and 5")
-        if not isinstance(place, Place):
-            raise ValueError("Invalid place")
-        if not isinstance(user, User):
-            raise ValueError("Invalid user")
+        if text is None or not str(text).strip():
+            raise ValueError("text cannot be empty")
 
-        place.add_review(self)
-        user.add_review(self)
+        if isinstance(rating, bool) or not isinstance(rating, int) or not 1 <= rating <= 5:
+            raise ValueError("rating must be between 1 and 5")
+
+        self.text = str(text).strip()[:2000]
+        self.rating = rating
+        self.user_id = user_id
+        self.place_id = place_id
+
+    def update(self, data: dict):
+        data = data or {}
+
+        if "text" in data:
+            v = data["text"]
+            if v is None or not str(v).strip():
+                raise ValueError("text cannot be empty")
+            self.text = str(v).strip()[:2000]
+
+        if "rating" in data:
+            v = data["rating"]
+            if isinstance(v, bool) or not isinstance(v, int) or not 1 <= v <= 5:
+                raise ValueError("rating must be between 1 and 5")
+            self.rating = v
+
+
+        self.save()
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "text": self.text,
+            "rating": self.rating,
+            "user_id": self.user_id,
+            "place_id": self.place_id,
+        }

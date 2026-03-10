@@ -73,7 +73,8 @@ The business logic layer defines the core entities and their relationships:
   - One-to-many with Review
 
 #### Test:
-```from app.models.user import User
+```
+from app.models.user import User
 
 def test_user_creation():
     user = User(first_name="John", last_name="Doe", email="john.doe@example.com")
@@ -89,8 +90,8 @@ test_user_creation()
 ```
 # Create a new user
 curl -X POST http://127.0.0.1:5000/api/v1/users/ \
-     -H "Content-Type: application/json" \
-     -d '{"first_name": "John", "last_name": "Doe", "email": "john.doe@example.com"}'
+    -H "Content-Type: application/json" \
+    -d '{"first_name": "John", "last_name": "Doe", "email": "john.doe@example.com"}'
 
 # Get a single user by ID
 curl -X GET http://127.0.0.1:5000/api/v1/users/<user_id>
@@ -108,7 +109,8 @@ curl -X GET http://127.0.0.1:5000/api/v1/users/
   - Many-to-many with Amenity
 
 #### Test:
-```from app.models.place import Place
+```
+from app.models.place import Place
 from app.models.user import User
 from app.models.review import Review
 
@@ -143,7 +145,8 @@ test_place_creation()
   - Many-to-many with Place
 
 #### Test:
-```from app.models.amenity import Amenity
+```
+from app.models.amenity import Amenity
 
 def test_amenity_creation():
     amenity = Amenity(name="Wi-Fi")
@@ -162,9 +165,7 @@ test_amenity_creation()
 
 ### Activate the virtual environment:
 
-Linux / macOS
 - source venv/bin/activate
-
 
 3. Install Dependencies
     - pip install -r requirements.txt
