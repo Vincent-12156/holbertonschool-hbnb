@@ -1,187 +1,373 @@
-# HBnB API
-## Project Overview
+# HBnB Evolution – Part 2
+## Implementation Technical Documentation
 
-HBnB is a modular RESTful API built with Flask. The project follows a clean, layered architecture that separates concerns between the API layer, business logic, service layer (Facade pattern), and persistence layer.
+---
 
-The application currently uses an in-memory repository for data storage, which is designed to be replaced later with a database-backed solution such as SQLAlchemy without modifying the upper layers of the application.
+## 1. Introduction
 
-## Project Structure
-![alt text](image.png)
+This document provides the technical implementation documentation for the HBnB Evolution project – Part 2.
 
-## Directory and File Description
-### app/
+While Part 1 focused on UML modeling and architectural design, Part 2 translates that design into a functional implementation using Python and Flask.
 
-Contains the core application logic.
+The objectives of this phase are:
 
-### app/api/
+- Implement the layered architecture defined in Part 1
+- Develop the Business Logic layer (core domain models)
+- Implement the Presentation layer (RESTful API endpoints)
+- Implement an in-memory Persistence layer
+- Enforce validation and business rules
+- Maintain separation of concerns via the Facade pattern
+- Implement automated unit and integration tests
 
-Handles the presentation layer (API endpoints).
-The v1/ directory organizes endpoints by API version.
+---
 
- - users.py – User endpoints
- - places.py – Place endpoints
- - reviews.py – Review endpoints
- -  amenities.py – Amenity endpoints
+## 2. High-Level Architecture (Implementation View)
 
-### app/models/
+### 2.1 Architectural Overview
 
-Contains business logic and domain models:
- - user.py – User model
- - place.py – Place model
- - review.py – Review model
- - amenity.py – Amenity model
+HBnB Evolution – Part 2 follows the three-layer architecture:
 
-### app/services/
+- Presentation Layer
+- Business Logic Layer
+- Persistence Layer
 
-Implements the Facade Pattern.
-facade.py – Contains the HBnBFacade class
-  - Coordinates communication between API, models, and persistence layers
-  - A singleton facade instance is created for global use
+The Facade Pattern (`HBnBFacade`) orchestrates interactions between layers.
 
-### app/persistence/
+Flow:
 
-Handles data storage.
+Client → API → Facade → Models (Business Rules) → Repository → Response
 
-repository.py – Defines:
- - Repository (Abstract Base Class)
- - InMemoryRepository (current implementation)
+Communication rules:
 
-This layer is designed to later support a database-backed repository.
+- The API layer communicates only with the Facade.
+- The Facade coordinates validation and repository access.
+- The Business Logic layer does not depend on Flask.
+- The Persistence layer is abstracted via repositories.
 
-### run.py
+This ensures:
 
-Application entry point.
-Creates and runs the Flask application.
+- Decoupling
+- Modularity
+- Testability
+- Smooth transition to Part 3 (SQLAlchemy persistence)
 
-### config.py
+---
 
-Contains configuration classes for managing environment-specific settings.
-
-### requirements.txt
-
-Lists all required Python dependencies.
-
-## Business Logic Layer
-
-The business logic layer defines the core entities and their relationships:
-
-### User
-
- - Attributes: id, first_name, last_name, email, is_admin, created_at, updated_at
- - Relationships:
-  - One-to-many with Place
-  - One-to-many with Review
-
-#### Test:
+## 3. Project Structure
 ```
-from app.models.user import User
-
-def test_user_creation():
-    user = User(first_name="John", last_name="Doe", email="john.doe@example.com")
-    assert user.first_name == "John"
-    assert user.last_name == "Doe"
-    assert user.email == "john.doe@example.com"
-    assert user.is_admin is False  # Default value
-    print("User creation test passed!")
-
-test_user_creation()
-```
-
-```
-# Create a new user
-curl -X POST http://127.0.0.1:5000/api/v1/users/ \
-    -H "Content-Type: application/json" \
-    -d '{"first_name": "John", "last_name": "Doe", "email": "john.doe@example.com"}'
-
-# Get a single user by ID
-curl -X GET http://127.0.0.1:5000/api/v1/users/<user_id>
-
-# List all users
-curl -X GET http://127.0.0.1:5000/api/v1/users/
+hbnb/
+├── app/
+│   ├── __init__.py
+│   ├── api/
+│   │   └── v1/
+│   │       ├── __init__.py
+│   │       ├── users.py
+│   │       ├── places.py
+│   │       ├── reviews.py
+│   │       └── amenities.py
+│   ├── models/
+│   │   ├── __init__.py
+│   │   ├── base_model.py
+│   │   ├── user.py
+│   │   ├── place.py
+│   │   ├── review.py
+│   │   └── amenity.py
+│   ├── services/
+│   │   ├── __init__.py
+│   │   └── facade.py
+│   └── persistence/
+│       └── repository.py
+├── tests/
+│   ├── __init__.py
+│   ├── test_models.py
+│   ├── test_facade.py
+│   └── test_api.py
+├── TESTING.md
+├── config.py
+├── run.py
+├── requirements.txt
+└── README.md
 ```
 
-### Place
+Each directory has a specific responsibility:
 
- - Attributes: id, title, description, price, latitude, longitude, owner, created_at, updated_at
+- `api/`: REST endpoints using Flask-RESTx
+- `models/`: Domain entities and validation logic
+- `services/`: Facade implementation
+- `persistence/`: Repository pattern implementation
+- `tests/`: Automated unit and integration tests
 
- - Relationships:
-  - One-to-many with Review
-  - Many-to-many with Amenity
+---
 
-#### Test:
-```
-from app.models.place import Place
-from app.models.user import User
-from app.models.review import Review
+## 4. Business Logic Layer Implementation
 
-def test_place_creation():
-    owner = User(first_name="Alice", last_name="Smith", email="alice.smith@example.com")
-    place = Place(title="Cozy Apartment", description="A nice place to stay", price=100, latitude=37.7749, longitude=-122.4194, owner=owner)
-    review = Review(text="Great stay!", rating=5, place=place, user=owner)
-    place.add_review(review)
+### 4.1 Base Model
 
-    assert place.title == "Cozy Apartment"
-    assert place.price == 100
-    assert len(place.reviews) == 1
-    assert place.reviews[0].text == "Great stay!"
-    print("Place creation and relationship test passed!")
+All entities inherit from `BaseModel`, which provides:
 
-test_place_creation()
-```
+- `id` (UUID string)
+- `created_at` timestamp
+- `updated_at` timestamp
+- `save()` method
+- `update()` method (overridden in models to enforce validation)
 
-### Review
+---
 
- - Attributes: id, text, rating, place, user, created_at, updated_at
+### 4.2 Domain Entities
 
- - Relationships:
-  - Belongs to a Place
-  - Written by a User
+#### User
 
-### Amenity
+Attributes:
+- id
+- first_name
+- last_name
+- email
+- is_admin
+- created_at
+- updated_at
 
- - Attributes: id, name, created_at, updated_at
+Business rules:
+- first_name and last_name required
+- email must follow a valid format
+- email is normalized to lowercase in the model
+- email uniqueness is enforced through the Facade before persistence
 
- - Relationships:
-  - Many-to-many with Place
+Updates:
+- `User.update()` enforces the same validation rules as creation
 
-#### Test:
-```
-from app.models.amenity import Amenity
+---
 
-def test_amenity_creation():
-    amenity = Amenity(name="Wi-Fi")
-    assert amenity.name == "Wi-Fi"
-    print("Amenity creation test passed!")
+#### Place
 
-test_amenity_creation()
-```
+Attributes:
+- id
+- title
+- description
+- price
+- latitude
+- longitude
+- owner_id
+- amenities (list of amenity IDs)
 
-## Installation Instructions
-1. Clone the Repository
-    - git clone https://github.com/Your_Name/holbertonschool-hbnb.git
-    - cd hbnb
-2. Create a Virtual Environment
-    - python3 -m venv venv
+Business rules:
+- title required
+- price must be ≥ 0
+- latitude must be between -90 and 90
+- longitude must be between -180 and 180
+- owner must exist (validated via Facade)
+- amenities must reference valid Amenity IDs (validated via Facade)
 
-### Activate the virtual environment:
+Updates:
+- `Place.update()` enforces validation rules for updated fields
+- `owner_id` is not updatable (rejected via Facade)
 
-- source venv/bin/activate
+---
 
-3. Install Dependencies
-    - pip install -r requirements.txt
+#### Review
 
-4. Run the Application
-    - python run.py
+Attributes:
+- id
+- text
+- rating
+- user_id
+- place_id
 
-The application will start in development mode.
+Business rules:
+- text required
+- rating must be between 1 and 5
+- user must exist (validated via Facade)
+- place must exist (validated via Facade)
 
-Swagger API documentation will be available at:
+Updates:
+- Review updates are partial (text and/or rating)
+- `user_id` and `place_id` are not updatable (rejected via Facade)
+
+---
+
+#### Amenity
+
+Attributes:
+- id
+- name
+
+Business rules:
+- name required
+- max length enforced (50)
+
+Updates:
+- `Amenity.update()` validates name updates
+
+---
+
+## 5. Persistence Layer Implementation
+
+### 5.1 Repository Pattern
+
+An abstract Repository defines:
+
+- add()
+- get()
+- get_all()
+- update()
+- delete()
+- get_by_attribute()
+
+### 5.2 InMemoryRepository
+
+Uses a dictionary for storage:
+
+`{ id: object }`
+
+This enables:
+
+- Fast testing
+- No external dependencies
+- Easy replacement in Part 3 (SQLAlchemy integration)
+
+---
+
+## 6. Facade Implementation
+
+`HBnBFacade` centralizes all operations.
+
+Repositories:
+- user_repo
+- place_repo
+- review_repo
+- amenity_repo
+
+Responsibilities:
+- Cross-entity validation (owner/user/place existence)
+- Amenities ID validation for places
+- Enforce update constraints for relationships:
+  - owner_id cannot be updated on Place
+  - user_id/place_id cannot be updated on Review
+
+---
+
+## 7. REST API Endpoints
+
+Swagger UI is available at:
 
 http://127.0.0.1:5000/api/v1/
 
-### Desactivate the virtual environment:
-- deactivate
+---
 
-## Author
+### 7.1 Users
 
-Aythan CRISTOVAO and Vincent RENAUD C#28-Sens
+- POST `/api/v1/users/`
+- GET `/api/v1/users/`
+- GET `/api/v1/users/<user_id>`
+- PUT `/api/v1/users/<user_id>`
+
+No DELETE in Part 2.
+
+Notes:
+- Password is not part of this part.
+- Email uniqueness is checked before creation/update.
+
+---
+
+### 7.2 Amenities
+
+- POST `/api/v1/amenities/`
+- GET `/api/v1/amenities/`
+- GET `/api/v1/amenities/<amenity_id>`
+- PUT `/api/v1/amenities/<amenity_id>`
+
+No DELETE in Part 2.
+
+---
+
+### 7.3 Places
+
+- POST `/api/v1/places/`
+- GET `/api/v1/places/`  
+  Returns a minimal representation (id, title, latitude, longitude)
+- GET `/api/v1/places/<place_id>`  
+  Returns an enriched representation including owner details and amenities
+- PUT `/api/v1/places/<place_id>`  
+  Partial update (only provided fields are updated)
+
+Additional endpoint:
+- GET `/api/v1/places/<place_id>/reviews`  
+  Returns reviews for a place (minimal review representation)
+
+---
+
+### 7.4 Reviews
+
+- POST `/api/v1/reviews/`
+- GET `/api/v1/reviews/`  
+  Returns a minimal representation (id, text, rating)
+- GET `/api/v1/reviews/<review_id>`
+- PUT `/api/v1/reviews/<review_id>`  
+  Partial update (text and/or rating only)
+- DELETE `/api/v1/reviews/<review_id>`
+
+Review is the only entity supporting deletion in Part 2.
+
+---
+
+## 8. Testing Strategy
+
+Automated tests are located in the `tests/` directory.
+
+- `test_models.py`: Validates model rules and boundary conditions
+- `test_facade.py`: Validates business logic, cross-entity rules, and forbidden updates
+- `test_api.py`: Validates HTTP status codes and full CRUD flows (including error cases)
+
+Detailed testing procedures and scenarios are documented in: `TESTING.md`
+
+---
+
+## 9. Setup and Execution
+
+### 9.1 Create and activate a virtual environment
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+### 9.2 Install dependencies
+```bash
+python3 -m pip install -r requirements.txt
+```
+### 9.3 Run the application
+```bash
+python3 run.py
+```
+---
+
+## 10. Running the Tests
+
+From the project root (part2/hbnb):
+```bash
+python3 -m unittest discover -s tests -p "test_*.py" -v
+```
+Optional: generate a test report file
+```bash
+python3 -m unittest discover -s tests -p "test_*.py" -v | tee test_report.txt
+```
+---
+
+## 11. Conclusion
+
+HBnB Evolution – Part 2 successfully implements the core business logic and RESTful API defined in Part 1.
+
+The project now provides:
+
+- A strict layered architecture (Presentation, Business Logic, Persistence)
+- Centralized orchestration through the Facade pattern
+- In-memory persistence using the Repository pattern
+- Model-level validation on both creation and updates
+- Cross-entity integrity enforcement (owner, user, place validation)
+- Partial updates for Places and Reviews, aligned with REST best practices
+- Minimal and detailed response representations where appropriate
+- Swagger-based API documentation
+- Automated unit and integration test coverage
+
+The system is modular, testable, and maintainable.  
+It respects separation of concerns and prepares the codebase for Part 3, where the persistence layer will transition from in-memory storage to a database-backed solution.
+
+HBnB Evolution – Part 2 therefore establishes a solid and scalable foundation for future enhancements.
