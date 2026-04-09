@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>List of Places</title>
+	<link rel="stylesheet" href="css/style.css">
+	<link rel="icon" href="favicon.ico" type="image/x-icon">
+</head>
+
+<body>
+	<div id="header"></div>
+
+	<main>
+		<section id="filter" class="filter-container">
+			<h1 id="places-count">Available Places</h1>
+			<div>
+				<label for="price-filter">Max Price:</label>
+				<select id="price-filter" class="filter">
+					<option value="10">$10</option>
+					<option value="50">$50</option>
+					<option value="100">$100</option>
+					<option value="150">$150</option>
+					<option value="200">$200</option>
+					<option value="250">$250</option>
+				</select>
+			</div>
+			<div>
+				<label>Min Rating:</label>
+				<div id="rating-filter" class="star-filter">
+					<span data-value="5">★</span>
+					<span data-value="4">★</span>
+					<span data-value="3">★</span>
+					<span data-value="2">★</span>
+					<span data-value="1">★</span>
+				</div>
+			</div>
+			<button id="reset-filters" class="reset-btn">Reset filters</button>
+		</section>
+
+		<section id="places-list" class="places-list"></section>
+	</main>
+
+	<div id="footer"></div>
+
+	<script type="module" src="js/scripts.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,154 @@
+from flask_restx import Namespace, Resource, fields
+from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
+from werkzeug.security import generate_password_hash
+from app.services import facade
+
+api = Namespace('users', description='User operations')
+
+user_model = api.model(
+    "User",
+    {
+        "first_name": fields.String(required=True, description="First name of the user"),
+        "last_name": fields.String(required=True, description="Last name of the user"),
+        "email": fields.String(required=True, description="Email of the user"),
+        "password": fields.String(required=True, description="Password of the user"),
+    },
+)
+
+update_user_model = api.model(
+    "UpdateUser",
+    {
+        "first_name": fields.String(description="First name of the user"),
+        "last_name": fields.String(description="Last name of the user"),
+        "email": fields.String(description="Email of the user"),
+    },
+)
+
+
+def _normalize_email(value):
+    if value is None:
+        return None
+    return str(value).strip().lower()
+
+
+@api.route("/")
+class UserList(Resource):
+    @api.expect(user_model, validate=True)
+    @api.response(201, "User successfully created")
+    @api.response(400, "Email already registered")
+    @api.response(400, "Invalid input data")
+    
+    @jwt_required()
+    def post(self):
+        """Register a new user"""
+        user_data = api.payload or {}
+        current_jwt = get_jwt()
+        if not current_jwt.get("is_admin", False):
+            return {"error": "Admin privileges required"}, 403
+        email_norm = _normalize_email(user_data.get("email"))
+        existing_user = facade.get_user_by_email(email_norm) if email_norm else None
+        if existing_user:
+            return {"error": "Email already registered"}, 400
+
+        try:
+            new_user = facade.create_user(user_data)
+        except ValueError as e:
+            return {"error": str(e)}, 400
+
+        return {
+            "message": "User created successfully",
+            "id": new_user.id
+        }, 201
+
+    @api.response(200, "List of users retrieved successfully")
+    def get(self):
+        """Retrieve a list of all users"""
+        users = facade.get_all_users()
+        return [user.to_dict() for user in users], 200
+
+
+@api.route("/<user_id>")
+class UserResource(Resource):
+    @api.response(200, "User details retrieved successfully")
+    @api.response(404, "User not found")
+    def get(self, user_id):
+        """Get user details by ID"""
+        user = facade.get_user(user_id)
+        if not user:
+            return {"error": "User not found"}, 404
+        return user.to_dict(), 200
+
+    @api.expect(update_user_model, validate=True)
+    @api.response(200, "User updated successfully")
+    @api.response(404, "User not found")
+    @api.response(400, "Invalid input data")
+    @api.response(400, "Email already registered")
+    @api.response(403, "Admin privileges required")
+
+    @jwt_required()
+    def put(self, user_id):
+        """Update user information"""
+        current_jwt = get_jwt()
+        if not current_jwt.get("is_admin", False):
+            return {"error": "Admin privileges required"}, 403
+        current_identity = get_jwt_identity()
+        is_admin = current_jwt.get("is_admin", False)
+
+        user = facade.get_user(user_id)
+        if not user:
+            return {"error": "User not found"}, 404
+        
+        user_data = api.payload or {}
+
+        if is_admin:
+            updated_user = facade.update_user(user_id, user_data)
+            return updated_user.to_dict(), 200
+
+        if str(user.id) != str(current_identity):
+            return {"error": "Admin privileges required"}, 403
+
+        updated_user = facade.update_user(user_id, user_data)
+        return updated_user.to_dict(), 200
+
+        if is_admin:
+            try:
+                updated_user = facade.update_user(user_id, user_data)
+            except ValueError as e:
+                return {"error": str(e)}, 400
+            return updated_user.to_dict(), 200  
+
+        if str(user.id) != str(current_identity):
+            return {"error": "Admin privileges required"}, 403
+
+        if "email" in user_data:
+            incoming_email = _normalize_email(user_data.get("email"))
+            current_email = _normalize_email(user.email)
+
+            if incoming_email and incoming_email != current_email:
+                existing_user = facade.get_user_by_email(incoming_email)
+                if existing_user and existing_user.id != user_id:
+                    return {"error": "Email already registered"}, 400
+
+        try:
+            updated_user = facade.update_user(user_id, user_data)
+        except ValueError as e:
+            return {"error": str(e)}, 400
+
+        return updated_user.to_dict(), 200
+
+@api.route('/protected')
+class ProtectedResource(Resource):
+    @jwt_required()
+    def get(self):
+        """A protected endpoint that requires a valid JWT token"""
+        print("jwt------")
+        print(get_jwt_identity())
+        current_user = get_jwt_identity()
+        claims = get_jwt()
+        is_admin = claims.get("is_admin", False)
+
+        return {
+            'user_id': current_user,
+            'is_admin': is_admin,
+            'message': f'Hello, user {current_user}'
+        }, 200

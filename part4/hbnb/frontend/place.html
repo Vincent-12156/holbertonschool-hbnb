@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Place Details</title>
+	<link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+	<div id="header"></div>
+
+	<main>
+		<section class="place-details">
+			<h1 id="place-title"></h1>
+			<div id="place-info" class="place-info"></div>
+		</section>
+
+		<section id="reviews" class="reviews">
+			<h2>Reviews</h2>
+			<div id="reviews-list"></div>
+		</section>
+
+		<section id="add-review">
+			<a id="add-review-link" href="add_review.html?id={{place.id}}" class="details-button">Add Review</a>
+		</section>
+
+		<div id="edit-review-modal" class="modal" style="display:none;">
+			<div class="modal-content">
+				<span id="close-modal" class="close">&times;</span>
+				<h3>Edit Review</h3>
+				<textarea id="edit-review-text" rows="4" cols="50"></textarea>
+				<label for="edit-review-rating">Rating (1-5):</label>
+				<input type="number" id="edit-review-rating" min="1" max="5">
+				<button id="save-review-btn" data-review-id="REVIEW_ID_HERE">Save</button>
+			</div>
+		</div>
+	
+	</main>
+
+	<div id="footer"></div>
+
+	<script type="module" src="js/scripts.js"></script>
+</body>
+
+</html>

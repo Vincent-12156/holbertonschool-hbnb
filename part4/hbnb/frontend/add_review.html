@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Add Review</title>
+	<link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+	<div id="header"></div>
+
+	<main>
+		<section class="add-review">
+			<form id="review-form" class="form">
+				<h2>Add a Review</h2>
+				<p id="user-info"></p>
+				<label for="review">Your Review:</label>
+				<textarea id="review" name="review" required></textarea>
+				<label for="rating">Rating:</label>
+				<div id="star-rating" name="rating" class="filter" required>
+					<span data-value="1">★</span>
+					<span data-value="2">★</span>
+					<span data-value="3">★</span>
+					<span data-value="4">★</span>
+					<span data-value="5">★</span>
+				</div>
+				<input type="hidden" id="rating" value="5">
+				<button type="submit" class="submit">Submit Review</button>
+			</form>
+		</section>
+	</main>
+
+	<div id="footer"></div>
+
+	<script type="module" src="js/scripts.js"></script>
+	<script type="module" src="js/add_review.js"></script>
+</body>
+
+</html>
